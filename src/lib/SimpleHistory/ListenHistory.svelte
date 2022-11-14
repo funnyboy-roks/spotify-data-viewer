@@ -1,17 +1,18 @@
 <script lang="ts">
-	import type { ChartData } from 'chart.js';
+	import { Chart, registerables, type ChartData } from 'chart.js';
 	import { Line } from 'svelte-chartjs';
 	import type { LineOptions } from 'src/types';
-	import 'chart.js/auto';
-	import type { Song } from '../util/data';
-	import { writable } from 'svelte/store';
-	import { streamingHistory } from '../stores';
-	import { minMax } from '../util/util';
+	import { simpleHistory } from '../../stores';
+	import { minMax } from '../../util/util';
+
+	Chart.register(...registerables);
 
 	const spotifyGreen = '#1db954';
 	let data: ChartData<'line'>;
-	const { min: minMonth, max: maxMonth } = minMax($streamingHistory.map((s) => new Date(s.endTime).getMonth()));
-	let listenHistory: number[] = Array(maxMonth + 1 - minMonth).fill(0).map((n, i) => i < minMonth ? null : n);
+	const { min: minMonth, max: maxMonth } = minMax($simpleHistory.map((s) => new Date(s.endTime).getMonth()));
+	let listenHistory: number[] = Array(maxMonth + 1 - minMonth)
+		.fill(0)
+		.map((n, i) => (i < minMonth ? null : n));
 
 	const updateData = () => {
 		data = {
@@ -25,7 +26,6 @@
 		};
 	};
 
-	//    ;)
 	const dtf = new Intl.DateTimeFormat(navigator.language, {
 		month: 'short',
 	});
@@ -72,11 +72,10 @@
 		},
 	};
 
-	const selectedSong = writable<Song>(undefined);
-
-	$streamingHistory.forEach((s) => {
+	const now = new Date();
+	$simpleHistory.forEach((s) => {
 		const date = new Date(s.endTime);
-		listenHistory[date.getMonth()] += s.msPlayed / 1000 / 60;
+		if (date.getFullYear() === now.getFullYear()) listenHistory[date.getMonth()] += s.msPlayed / 1000 / 60;
 	});
 	updateData();
 </script>

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { streamingHistory } from '../stores';
 	import SongHistory from './SongHistory.svelte';
 	import ListenHistory from './ListenHistory.svelte';
 

@@ -1,33 +1,45 @@
 import { ZipReader, BlobReader, type Entry, TextWriter, type EntryGetDataOptions } from '@zip.js/zip.js';
-import type { Stream } from './spotify';
+import type { SimpleStream, SimpleSong, ExtendedStream } from './spotify';
 
 export const getEntries = async (file: Blob): Promise<Entry[]> => {
 	return await new ZipReader(new BlobReader(file)).getEntries({});
 };
 
-export const getStreamingHistory = async (file: Blob): Promise<Stream[]> => {
-	// await new Promise((r) => setTimeout(r, 5));
+export const isSimpleHistory = (data: Entry[]): boolean => {
+	return data.some((d) => d.filename.startsWith('MyData/StreamingHistory'));
+};
 
-	const data = await getEntries(file);
-	const streamHistory = [];
+export const isExtendedHistory = (data: Entry[]): boolean => {
+	return data.some((d) => d.filename.startsWith('MyData/endsong'));
+};
+
+export const getSimpleHistory = async (data: Entry[]): Promise<SimpleStream[]> => {
+	const history = [];
 
 	for (const d of data) {
 		if (!d.filename.startsWith('MyData/StreamingHistory')) continue;
 		const rawFileData = await d.getData(new TextWriter('utf-8'));
 		const parsed = JSON.parse(rawFileData);
-		streamHistory.push(...parsed);
+		history.push(...parsed);
 	}
 
-	return streamHistory;
+	return history;
 };
 
-export interface Song {
-	title: string;
-	artist: string;
-	totalMsPlayed: number;
-}
+export const getExtendedHistory = async (data: Entry[]): Promise<ExtendedStream[]> => {
+	const history: ExtendedStream[] = [];
 
-export const getAllSongs = (history: Stream[]): Song[] => {
+	for (const d of data) {
+		if (!d.filename.startsWith('MyData/endsong')) continue;
+		const rawFileData = await d.getData(new TextWriter('utf-8'));
+		const parsed = JSON.parse(rawFileData);
+		history.push(...parsed);
+	}
+
+	return history;
+};
+
+export const getSimpleSongs = (history: SimpleStream[]): SimpleSong[] => {
 	const songMap = new Map<string, number>();
 	const getKey = (artist: string, title: string) => artist + '§§§§§' + title;
 	const fromKey = (key: string) => {
@@ -47,8 +59,6 @@ export const getAllSongs = (history: Stream[]): Song[] => {
 	return [...songMap.entries()].map(([k, v]) => ({ ...fromKey(k), totalMsPlayed: v }));
 };
 
-export const getListens = (song: Song, history: Stream[]) => {
-	return history.filter(s => s.artistName === song.artist && s.trackName === song.title);
-}
-
-
+export const getSimpleListens = (song: SimpleSong, history: SimpleStream[]) => {
+	return history.filter((s) => s.artistName === song.artist && s.trackName === song.title);
+};

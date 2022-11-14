@@ -1,27 +1,31 @@
 <script lang="ts">
-	import { streamingHistory } from './stores';
+	import { simpleHistory, extendedHistory } from './stores';
 
 	import LoadFile from './lib/LoadFile.svelte';
-	import StreamingHistory from './lib/StreamingHistory.svelte';
+	import SimpleHistory from './lib/SimpleHistory/SimpleHistory.svelte';
+	import ExtendedHistory from './lib/ExtendedHistory/ExtendedHistory.svelte';
 </script>
 
 <main class="container">
 	<nav>
 		<ul>
-			<li />
+			<!-- <li /> -->
 		</ul>
 		<ul>
 			<li><h1>Spotify Data Viewer</h1></li>
 		</ul>
 		<ul>
-			<li />
+			<!-- <li /> -->
 		</ul>
 	</nav>
-	{#if !$streamingHistory}
+
+	{#if $simpleHistory}
+		<SimpleHistory />
+	{:else if $extendedHistory}
+		<ExtendedHistory />
+		{:else}
 		<LoadFile />
-	{:else}
-		<StreamingHistory />
-	{/if}
+		{/if}
 
 	<br />
 </main>

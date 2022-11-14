@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
-import type { Stream } from './util/spotify';
+import type { ExtendedStream, SimpleStream } from './util/spotify';
 
-export const streamingHistory = writable<Stream[] | null>(null);
+export const simpleHistory = writable<SimpleStream[] | null>(null);
+export const extendedHistory = writable<ExtendedStream[] | null>(null);
 
 export const activeSongSearch = writable<string>('');
